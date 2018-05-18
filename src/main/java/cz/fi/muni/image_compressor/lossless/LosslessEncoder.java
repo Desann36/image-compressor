@@ -1,14 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package cz.fi.muni.image_compressor;
+package cz.fi.muni.image_compressor.lossless;
 
+import cz.fi.muni.image_compressor.common.CompressionType;
+import cz.fi.muni.image_compressor.utils.EncodeWriter;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -16,17 +14,11 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author DL
  */
 public class LosslessEncoder {
-    private String outputDir;
     
-    public LosslessEncoder(String inputFile, String outputDir){
-        this.outputDir = outputDir;
-    }
-    
-    public void encode(BufferedImage image) {
-        byte[] values = this.makeArray(image);
+    public static void encode(BufferedImage image, Path outputDir) {
+        byte[] values = makeArray(image);
         Dictionary dctr = new Dictionary();
         
         try (ByteArrayOutputStream dataStream = new ByteArrayOutputStream()) {
@@ -35,12 +27,12 @@ public class LosslessEncoder {
             int bitLength = 0;
             int i = 0;
             while(i < values.length){
-                List<Byte> curr = this.getNextSymbolsToEncode(dctr, values, i);
+                List<Byte> curr = getNextSymbolsToEncode(dctr, values, i);
                 
                 bitLength += dctr.getCodeLength();
                 
-                String bits = this.getSymbolsInBits(dctr, curr, remainingBits);
-                remainingBits = this.writeBitsByBytes(bits, dataStream);
+                String bits = getSymbolsInBits(dctr, curr, remainingBits);
+                remainingBits = EncodeWriter.writeBitsByBytes(bits, dataStream);
                 
                 prev.add(values[i]);
                 dctr.addKeyToDictionary(prev);
@@ -49,10 +41,12 @@ public class LosslessEncoder {
                 prev = new ArrayList<>(curr);
             }   
             
-            this.writeLastByte(remainingBits, dataStream);
+            EncodeWriter.writeLastByte(remainingBits, dataStream);
             
-            try(FileOutputStream outStream = new FileOutputStream(outputDir + "encoded_image.sav")) {
-                this.writeBitLength(bitLength, outStream);
+            try(FileOutputStream outStream = new FileOutputStream(outputDir + "encoded_image.enc")) {
+                EncodeWriter.writeCompressionType(CompressionType.LOSSLESS, outStream);
+                EncodeWriter.writeImageSize(image.getWidth(), image.getHeight(), outStream);
+                EncodeWriter.writeBitLength(bitLength, outStream);
                 dataStream.writeTo(outStream);
             } catch (IOException ex) {
                 Logger.getLogger(LosslessEncoder.class.getName()).log(Level.SEVERE, null, ex);
@@ -62,18 +56,12 @@ public class LosslessEncoder {
         }
     }
     
-    private void writeBitLength(int bitLength, FileOutputStream outStream) throws IOException{
-        for(int j = 3; j >= 0; j--){
-            outStream.write(bitLength >> (j * 8));
-        }
-    }
-    
-    private String getSymbolsInBits(Dictionary dctr, List<Byte> curr, String bitBuffer){
+    private static String getSymbolsInBits(Dictionary dctr, List<Byte> curr, String bitBuffer){
         return bitBuffer + String.format("%" + dctr.getCodeLength() + "s", 
             Integer.toBinaryString(dctr.getValue(curr))).replace(' ', '0');
     }
     
-    private List<Byte> getNextSymbolsToEncode(Dictionary dctr, byte[] values, int i){
+    private static List<Byte> getNextSymbolsToEncode(Dictionary dctr, byte[] values, int i){
         List<Byte> curr = new ArrayList<>();
         List<Byte> aux = new ArrayList<>();
         curr.add(values[i]);
@@ -87,29 +75,7 @@ public class LosslessEncoder {
         return curr;
     }
     
-    private String writeBitsByBytes(String bits, ByteArrayOutputStream out) throws IOException{
-        int byteNumber = bits.length() / 8;
-
-        for(int k = 0; k < byteNumber; k++){
-            int beginIndex = k * 8;
-            int endIndex = (k + 1) * 8;
-            String oneByte = bits.substring(beginIndex, endIndex);
-            out.write(Integer.parseInt(oneByte, 2));
-        }
-            
-        return bits.substring(8 * byteNumber, bits.length());
-    }
-    
-    private void writeLastByte(String bitBuffer, ByteArrayOutputStream out) throws IOException{
-        if(!bitBuffer.equals("")){
-            byte lastByte = Byte.parseByte(bitBuffer, 2);
-            int shift = 8 - bitBuffer.length();
-            lastByte <<= shift;
-            out.write(lastByte);
-        }
-    }
-    
-    private byte[] makeArray(BufferedImage image){
+    private static byte[] makeArray(BufferedImage image){
         int height = image.getHeight();
         int width = image.getWidth();
         int index = 0;
