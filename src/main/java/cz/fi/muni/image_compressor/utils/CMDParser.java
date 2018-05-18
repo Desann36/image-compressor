@@ -1,70 +1,88 @@
 package cz.fi.muni.image_compressor.utils;
 
 import cz.fi.muni.image_compressor.common.CompressionType;
+import cz.fi.muni.image_compressor.common.DecodeOptions;
+import cz.fi.muni.image_compressor.common.EncodeOptions;
 import cz.fi.muni.image_compressor.common.Options;
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  *
  */
 public class CMDParser {
+    
     public static Options parseCommandLine(String[] args){
-        String type = null;
-        int quality = -1;
-        File inputFile = null;
-        Path outputDir = null;
+        String codingType = null;
         String arg;
         int i = 0;
         
         //optional arguments
-        while(i < args.length && args[i].startsWith("-")) {
-            arg = args[i++];
+        while(args[i].startsWith("-")) {
+            arg = getArgument(args, i++);
 
             if(arg.equals("-help")){
-                System.out.println("Usage: ImageCompressor [-help] {lossless | lossy quality} input_file output_dir");
+                System.out.println("Usage: ImageCompressor [-help] {e {lossless | lossy quality} | d} input_file output_dir");
             }
             else{
                 throw new IllegalArgumentException("Unknown optional argument!");
             }
         }
         
-        //mandatory arguments
-        for(int j = 0; j < 3; j++){
-            arg = args[i++];
+        codingType = getArgument(args, i++);
+
+        if(codingType.equals("e")){
+            return parseEncoding(args, i);
+        }
+        else if(codingType.equals("d")){
+            return parseDecoding(args, i);
+        }
+        else{
+            throw new IllegalArgumentException("Wrong coding type!");
+        }
+    }
+    
+    private static Options parseEncoding(String[] args, int i){
+        String quality = null;
+        
+        String compressionType = getArgument(args, i++);
+
+        if(compressionType.equals("lossy")){
+            quality = getArgument(args, i++);
+        }
+
+        String inputFile = getArgument(args, i++);
+        String outputDir = getArgument(args, i++);
+        
+        EncodeOptions options = new EncodeOptions(compressionType, inputFile, outputDir); 
             
-            switch (j) {
-                case 0:
-                    type = arg.toUpperCase();
-                    
-                    if(type.equals("LOSSY")){
-                        try{
-                            quality = Integer.parseInt(args[i]);
-                        }catch (NumberFormatException e) {
-                            throw new IllegalArgumentException("Quality must be a number!", e);
-                        }
-                        i++;
-                    }
-                    
-                    break;
-                case 1:
-                    inputFile = new File(arg);
-                    break;
-                case 2:
-                    outputDir = Paths.get(arg);
-                    break;
-                default:
-                    break;
-            }
+        if(options.getCompressionType().equals(CompressionType.LOSSY)){
+            options.setLossyQuality(quality);
         }
         
-        Options opt = new Options(type, inputFile, outputDir);
+        allArgumentsRead(args, i);
+        return options;
+    }
+    
+    private static Options parseDecoding(String[] args, int i){
+        String inputFile = getArgument(args, i++);
+        String outputDir = getArgument(args, i++);
         
-        if(opt.getCompressionType().equals(CompressionType.LOSSY)){
-            opt.setLossyQuality(quality);
+        DecodeOptions options = new DecodeOptions(inputFile, outputDir);
+        
+        allArgumentsRead(args, i);
+        return options;
+    }
+    
+    private static void allArgumentsRead(String[] args, int i){
+        if(i != args.length){
+            throw new IllegalArgumentException("Too many arguments!");
         }
-        
-        return opt;
+    }
+    
+    private static String getArgument(String[] args, int i){
+        if(i >= args.length){
+            throw new IllegalArgumentException("Some arguments are missing!");
+        }else{
+            return args[i];
+        }
     }
 }
