@@ -13,11 +13,29 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Class performing lossless encoding of images using LZW compression algorithm.
  */
 public class LosslessEncoder {
+    private Path outputDir;
+
+    /**
+     * Constructs a new instance of LosslessEncoder.
+     * 
+     * @param outputDir directory for output file
+     */
+    public LosslessEncoder(Path outputDir) {
+        this.outputDir = outputDir;
+    }
     
-    public static void encode(BufferedImage image, Path outputDir) {
+    /**
+     * Performs lossless encoding of the specified image using LZW compression 
+     * algorithm. The output of this encoder is stored in file with specified
+     * name with the extension .enc. 
+     * 
+     * @param image          image to be encoded
+     * @param outputFileName name of the output file
+     */
+    public void encode(BufferedImage image, String outputFileName) {
         byte[] values = makeArray(image);
         Dictionary dctr = new Dictionary();
         
@@ -43,7 +61,7 @@ public class LosslessEncoder {
             
             EncodeWriter.writeLastByte(remainingBits, dataStream);
             
-            try(FileOutputStream outStream = new FileOutputStream(outputDir + "encoded_image.enc")) {
+            try(FileOutputStream outStream = new FileOutputStream(outputDir + outputFileName + ".enc")) {
                 EncodeWriter.writeCompressionType(CompressionType.LOSSLESS, outStream);
                 EncodeWriter.writeImageSize(image.getWidth(), image.getHeight(), outStream);
                 EncodeWriter.writeBitLength(bitLength, outStream);

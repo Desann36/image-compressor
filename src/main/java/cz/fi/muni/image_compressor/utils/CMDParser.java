@@ -6,12 +6,19 @@ import cz.fi.muni.image_compressor.common.EncodeOptions;
 import cz.fi.muni.image_compressor.common.Options;
 
 /**
- *
+ * Class for parsing the command line arguments. 
  */
 public class CMDParser {
     
+    /**
+     * Parses the command line arguments and stores them in the instance of
+     * class Options.
+     * 
+     * @param args command line arguments
+     * @return instance of class Options containing user-specified information
+     * about image compression
+     */
     public static Options parseCommandLine(String[] args){
-        String codingType = null;
         String arg;
         int i = 0;
         
@@ -27,7 +34,7 @@ public class CMDParser {
             }
         }
         
-        codingType = getArgument(args, i++);
+        String codingType = getArgument(args, i++);
 
         if(codingType.equals("e")){
             return parseEncoding(args, i);
@@ -81,7 +88,8 @@ public class CMDParser {
     private static String getArgument(String[] args, int i){
         if(i >= args.length){
             throw new IllegalArgumentException("Some arguments are missing!");
-        }else{
+        }
+        else{
             return args[i];
         }
     }

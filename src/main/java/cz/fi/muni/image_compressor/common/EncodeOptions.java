@@ -4,26 +4,39 @@ import lombok.Data;
 import lombok.Getter;
 
 /**
- *
+ * Stores user-specified information regarding encoding.
  */
 @Data
 public class EncodeOptions extends Options{
     @Getter private CompressionType compressionType;
     @Getter private int lossyQuality = 40;
 
+    /**
+     * Creates a new instance of EncodeOptions.
+     * 
+     * @param type      type of encoding
+     * @param inputFile path to input file
+     * @param outputDir directory for output file
+     */
     public EncodeOptions(String type, String inputFile, String outputDir){
         super(inputFile, outputDir);
         type = type.toUpperCase();
 
         if(type.equals("LOSSY") || type.equals("LOSSLESS")){
             this.compressionType = CompressionType.valueOf(type);
-        }else{
+        }
+        else{
             throw new IllegalArgumentException("Compression type must be either lossy or lossless!");
         }
     }
 
+    /**
+     * Sets the quality of lossy compression.
+     * 
+     * @param lossyQuality quality of lossy compression
+     */
     public void setLossyQuality(String lossyQuality){
-        int quality = -1;
+        int quality;
         
         if(lossyQuality != null){
             try{

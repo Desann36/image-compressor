@@ -6,33 +6,72 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- *
+ * Class containing methods helping the encoder to construct the output file.
  */
 public class EncodeWriter {
     
+    /**
+     * Writes the compression type into output stream.
+     * 
+     * @param type      compression type
+     * @param outStream output stream
+     * @throws IOException if an error occurs during writing
+     */
     public static void writeCompressionType(CompressionType type, FileOutputStream outStream) throws IOException{
         if(type.equals(CompressionType.LOSSLESS)){
             outStream.write(0);
-        }else{
+        }
+        else{
             outStream.write(1);
         }
     }
     
+    /**
+     * Writes the image size (width and height) into output stream.
+     * 
+     * @param width     inamge width
+     * @param height    image height
+     * @param outStream output stream
+     * @throws IOException if an error occurs during writing
+     */
     public static void writeImageSize(int width, int height, FileOutputStream outStream) throws IOException{
         writeInteger(width, outStream);
         writeInteger(height, outStream);
     }
     
+    /**
+     * Writes the bit length of encoded image into output stream.
+     * 
+     * @param bitLength bit length of encoded image
+     * @param outStream output stream
+     * @throws IOException if an error occurs during writing
+     */
     public static void writeBitLength(int bitLength, FileOutputStream outStream) throws IOException{
         writeInteger(bitLength, outStream);
     }
     
+    /**
+     * Writes an integer (four bytes) into output stream.
+     * 
+     * @param value     value to be writted
+     * @param outStream output stream
+     * @throws IOException if an error occurs during writing
+     */
     public static void writeInteger(int value, FileOutputStream outStream) throws IOException{
         for(int j = 3; j >= 0; j--){
             outStream.write(value >> (j * 8));
         }
     }
     
+    /**
+     * Writes the chain of bits into data stream byte by byte. Returns the 
+     * remaining bits which could not be writted as a whole byte.
+     * 
+     * @param bits chain of bits to be written
+     * @param out  data stream
+     * @return the remaining bits
+     * @throws IOException if an error occurs during writing
+     */
     public static String writeBitsByBytes(String bits, ByteArrayOutputStream out) throws IOException{
         int byteNumber = bits.length() / 8;
 
@@ -46,10 +85,18 @@ public class EncodeWriter {
         return bits.substring(8 * byteNumber, bits.length());
     }
     
-    public static void writeLastByte(String bitBuffer, ByteArrayOutputStream out) throws IOException{
-        if(!bitBuffer.equals("")){
-            byte lastByte = Byte.parseByte(bitBuffer, 2);
-            int shift = 8 - bitBuffer.length();
+    /**
+     * Writes the specified chain of bits as a whole byte. Performs insering 
+     * zeros at the end of this chain if the length of it is less than eight.
+     * 
+     * @param bits bits to be written
+     * @param out data stream
+     * @throws IOException if an error occurs during writing
+     */
+    public static void writeLastByte(String bits, ByteArrayOutputStream out) throws IOException{
+        if(!bits.equals("")){
+            byte lastByte = Byte.parseByte(bits, 2);
+            int shift = 8 - bits.length();
             lastByte <<= shift;
             out.write(lastByte);
         }

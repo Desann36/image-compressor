@@ -12,10 +12,15 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 /**
- *
+ * Entry class for compressing/decompressing images.
  */
 public class ImageCompressor {
     
+    /**
+     * Main method to start the application.
+     * 
+     * @param args command line arguments
+     */
     public static void main(String[] args)
     {
         String[] argss = new String[]{"-help", "e", "lossless", "image_gray.bmp", ""};
@@ -23,12 +28,14 @@ public class ImageCompressor {
         try{
             Options options = CMDParser.parseCommandLine(argss);
             BufferedImage image = CustomReader.readImageFile(options.getInputFile());
-            
+            String fileNameWithOutExt = options.getInputFile().getName().replaceFirst("[.][^.]+$", "");
+
             if(options instanceof EncodeOptions){
                 EncodeOptions opt = (EncodeOptions) options;
                 
                 if(opt.getCompressionType().equals(CompressionType.LOSSLESS)){
-                    LosslessEncoder.encode(image, opt.getOutputDir());
+                    LosslessEncoder encoder = new LosslessEncoder(opt.getOutputDir());
+                    encoder.encode(image, fileNameWithOutExt + "_encoded");
                 }
                 else{
                     LossyEncoder.encode(image, opt.getOutputDir());

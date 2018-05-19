@@ -1,5 +1,17 @@
 package cz.fi.muni.image_compressor.common;
 
+/**
+ * Types of compression that can be used.
+ */
 public enum CompressionType {
-    LOSSLESS, LOSSY
+
+    /**
+     * Lossless image compression
+     */
+    LOSSLESS,
+
+    /**
+     * Lossy image compression
+     */
+    LOSSY
 }
