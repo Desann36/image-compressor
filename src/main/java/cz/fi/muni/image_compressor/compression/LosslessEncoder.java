@@ -37,28 +37,28 @@ public class LosslessEncoder {
         Dictionary dictionary = new Dictionary();
         
         try (ByteArrayOutputStream dataStream = new ByteArrayOutputStream()) {
-            String remainingBits = "";
-            List<Byte> prev = new ArrayList<>();
-            int bitLength = 0;
+            String remainingBitsOfCode = "";
+            List<Byte> prevPixelsToEncode = new ArrayList<>();
+            int wholeCodeLength = 0;
             int i = 0;
             
             while(i < values.length){
-                List<Byte> curr = getNextSymbolsToEncode(dictionary, values, i);
+                List<Byte> pixelsToEncode = getNextPixelsToEncode(dictionary, values, i);
                 
-                bitLength += dictionary.getCodeLength();
+                wholeCodeLength += dictionary.getCodeLength();
                 
-                String bits = getSymbolsInBits(dictionary, curr, remainingBits);
-                remainingBits = EncodeWriter.writeBitsByBytes(bits, dataStream);
+                String code = getCodeOfPixels(dictionary, pixelsToEncode, remainingBitsOfCode);
+                remainingBitsOfCode = EncodeWriter.writeBitsByBytes(code, dataStream);
                 
-                prev.add(values[i]);
-                dictionary.addKeyToDictionary(prev);
+                prevPixelsToEncode.add(values[i]);
+                dictionary.addNewPixels(prevPixelsToEncode);
                 
-                i += curr.size();
-                prev = new ArrayList<>(curr);
+                i += pixelsToEncode.size();
+                prevPixelsToEncode = new ArrayList<>(pixelsToEncode);
             }   
             
-            EncodeWriter.writeLastByte(remainingBits, dataStream);
-            this.createOutputFile(dataStream, image.getWidth(), image.getHeight(), bitLength, outputFileName);
+            EncodeWriter.writeLastByte(remainingBitsOfCode, dataStream);
+            this.createOutputFile(dataStream, image.getWidth(), image.getHeight(), wholeCodeLength, outputFileName);
         } catch (IOException e) {
             throw new IOException("Error encoding the image!", e);
         }
@@ -75,18 +75,19 @@ public class LosslessEncoder {
         }
     }
     
-    private String getSymbolsInBits(Dictionary dictionary, List<Byte> curr, String bitBuffer){
+    private String getCodeOfPixels(Dictionary dictionary, List<Byte> curr, String bitBuffer){
         return bitBuffer + String.format("%" + dictionary.getCodeLength() + "s", 
-            Integer.toBinaryString(dictionary.getValue(curr))).replace(' ', '0');
+            Integer.toBinaryString(dictionary.getCode(curr))).replace(' ', '0');
     }
     
-    private List<Byte> getNextSymbolsToEncode(Dictionary dictionary, byte[] values, int i){
+    //get the longest possible sequence of pixels in dictionary
+    private List<Byte> getNextPixelsToEncode(Dictionary dictionary, byte[] values, int i){
         List<Byte> curr = new ArrayList<>();
         List<Byte> aux = new ArrayList<>();
         curr.add(values[i]);
         aux.add(values[i]);
         
-        while(dictionary.containsKey(aux) && (++i < values.length)) { 
+        while(dictionary.containsPixels(aux) && (++i < values.length)) { 
             curr = new ArrayList<>(aux);
             aux.add(values[i]);
         }
