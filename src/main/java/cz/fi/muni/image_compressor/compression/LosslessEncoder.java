@@ -1,6 +1,5 @@
-package cz.fi.muni.image_compressor.lossless;
+package cz.fi.muni.image_compressor.compression;
 
-import cz.fi.muni.image_compressor.common.CompressionType;
 import cz.fi.muni.image_compressor.utils.EncodeWriter;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -9,8 +8,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Class performing lossless encoding of images using LZW compression algorithm.
@@ -35,57 +32,61 @@ public class LosslessEncoder {
      * @param image          image to be encoded
      * @param outputFileName name of the output file
      */
-    public void encode(BufferedImage image, String outputFileName) {
+    public void encode(BufferedImage image, String outputFileName) throws IOException {
         byte[] values = makeArray(image);
-        Dictionary dctr = new Dictionary();
+        Dictionary dictionary = new Dictionary();
         
         try (ByteArrayOutputStream dataStream = new ByteArrayOutputStream()) {
             String remainingBits = "";
             List<Byte> prev = new ArrayList<>();
             int bitLength = 0;
             int i = 0;
+            
             while(i < values.length){
-                List<Byte> curr = getNextSymbolsToEncode(dctr, values, i);
+                List<Byte> curr = getNextSymbolsToEncode(dictionary, values, i);
                 
-                bitLength += dctr.getCodeLength();
+                bitLength += dictionary.getCodeLength();
                 
-                String bits = getSymbolsInBits(dctr, curr, remainingBits);
+                String bits = getSymbolsInBits(dictionary, curr, remainingBits);
                 remainingBits = EncodeWriter.writeBitsByBytes(bits, dataStream);
                 
                 prev.add(values[i]);
-                dctr.addKeyToDictionary(prev);
+                dictionary.addKeyToDictionary(prev);
                 
                 i += curr.size();
                 prev = new ArrayList<>(curr);
             }   
             
             EncodeWriter.writeLastByte(remainingBits, dataStream);
-            
-            try(FileOutputStream outStream = new FileOutputStream(outputDir + outputFileName + ".enc")) {
-                EncodeWriter.writeCompressionType(CompressionType.LOSSLESS, outStream);
-                EncodeWriter.writeImageSize(image.getWidth(), image.getHeight(), outStream);
-                EncodeWriter.writeBitLength(bitLength, outStream);
-                dataStream.writeTo(outStream);
-            } catch (IOException ex) {
-                Logger.getLogger(LosslessEncoder.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(LosslessEncoder.class.getName()).log(Level.SEVERE, null, ex);
+            this.createOutputFile(dataStream, image.getWidth(), image.getHeight(), bitLength, outputFileName);
+        } catch (IOException e) {
+            throw new IOException("Error encoding the image!", e);
         }
     }
     
-    private static String getSymbolsInBits(Dictionary dctr, List<Byte> curr, String bitBuffer){
-        return bitBuffer + String.format("%" + dctr.getCodeLength() + "s", 
-            Integer.toBinaryString(dctr.getValue(curr))).replace(' ', '0');
+    private void createOutputFile(ByteArrayOutputStream dataStream, int width, int height, int bitLength, 
+            String outputFileName) throws IOException{
+        try(FileOutputStream outStream = new FileOutputStream(outputDir + outputFileName + ".enc")) {
+            EncodeWriter.writeImageSize(width, height, outStream);
+            EncodeWriter.writeBitLength(bitLength, outStream);
+            dataStream.writeTo(outStream);
+        } catch (IOException e) {
+            throw new IOException("Error creating the output file!", e);
+        }
     }
     
-    private static List<Byte> getNextSymbolsToEncode(Dictionary dctr, byte[] values, int i){
+    private String getSymbolsInBits(Dictionary dictionary, List<Byte> curr, String bitBuffer){
+        return bitBuffer + String.format("%" + dictionary.getCodeLength() + "s", 
+            Integer.toBinaryString(dictionary.getValue(curr))).replace(' ', '0');
+    }
+    
+    private List<Byte> getNextSymbolsToEncode(Dictionary dictionary, byte[] values, int i){
         List<Byte> curr = new ArrayList<>();
         List<Byte> aux = new ArrayList<>();
         curr.add(values[i]);
         aux.add(values[i]);
         
-        while(dctr.containsKey(aux) && (++i < values.length)) { 
+        while(dictionary.containsKey(aux) && (++i < values.length)) { 
             curr = new ArrayList<>(aux);
             aux.add(values[i]);
         }
@@ -93,7 +94,7 @@ public class LosslessEncoder {
         return curr;
     }
     
-    private static byte[] makeArray(BufferedImage image){
+    private byte[] makeArray(BufferedImage image){
         int height = image.getHeight();
         int width = image.getWidth();
         int index = 0;

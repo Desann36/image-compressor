@@ -1,4 +1,4 @@
-package cz.fi.muni.image_compressor.lossless;
+package cz.fi.muni.image_compressor.compression;
 
 import java.util.ArrayList;
 import java.util.HashMap;

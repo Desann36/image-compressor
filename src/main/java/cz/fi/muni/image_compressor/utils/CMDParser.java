@@ -1,8 +1,5 @@
 package cz.fi.muni.image_compressor.utils;
 
-import cz.fi.muni.image_compressor.common.CompressionType;
-import cz.fi.muni.image_compressor.common.DecodeOptions;
-import cz.fi.muni.image_compressor.common.EncodeOptions;
 import cz.fi.muni.image_compressor.common.Options;
 
 /**
@@ -27,53 +24,18 @@ public class CMDParser {
             arg = getArgument(args, i++);
 
             if(arg.equals("-help")){
-                System.out.println("Usage: ImageCompressor [-help] {e {lossless | lossy quality} | d} input_file output_dir");
+                System.out.println("Usage: ImageCompressor [-help] {e | d} input_file output_dir");
             }
             else{
                 throw new IllegalArgumentException("Unknown optional argument!");
             }
         }
         
-        String codingType = getArgument(args, i++);
-
-        if(codingType.equals("e")){
-            return parseEncoding(args, i);
-        }
-        else if(codingType.equals("d")){
-            return parseDecoding(args, i);
-        }
-        else{
-            throw new IllegalArgumentException("Wrong coding type!");
-        }
-    }
-    
-    private static Options parseEncoding(String[] args, int i){
-        String quality = null;
-        
-        String compressionType = getArgument(args, i++);
-
-        if(compressionType.equals("lossy")){
-            quality = getArgument(args, i++);
-        }
-
+        String compressionOperation = getArgument(args, i++);
         String inputFile = getArgument(args, i++);
         String outputDir = getArgument(args, i++);
         
-        EncodeOptions options = new EncodeOptions(compressionType, inputFile, outputDir); 
-            
-        if(options.getCompressionType().equals(CompressionType.LOSSY)){
-            options.setLossyQuality(quality);
-        }
-        
-        allArgumentsRead(args, i);
-        return options;
-    }
-    
-    private static Options parseDecoding(String[] args, int i){
-        String inputFile = getArgument(args, i++);
-        String outputDir = getArgument(args, i++);
-        
-        DecodeOptions options = new DecodeOptions(inputFile, outputDir);
+        Options options = new Options(compressionOperation, inputFile, outputDir); 
         
         allArgumentsRead(args, i);
         return options;

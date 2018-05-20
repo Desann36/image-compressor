@@ -1,6 +1,5 @@
 package cz.fi.muni.image_compressor.utils;
 
-import cz.fi.muni.image_compressor.common.CompressionType;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -9,22 +8,6 @@ import java.io.IOException;
  * Class containing methods helping the encoder to construct the output file.
  */
 public class EncodeWriter {
-    
-    /**
-     * Writes the compression type into output stream.
-     * 
-     * @param type      compression type
-     * @param outStream output stream
-     * @throws IOException if an error occurs during writing
-     */
-    public static void writeCompressionType(CompressionType type, FileOutputStream outStream) throws IOException{
-        if(type.equals(CompressionType.LOSSLESS)){
-            outStream.write(0);
-        }
-        else{
-            outStream.write(1);
-        }
-    }
     
     /**
      * Writes the image size (width and height) into output stream.
