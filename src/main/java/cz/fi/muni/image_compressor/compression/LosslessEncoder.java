@@ -31,6 +31,8 @@ public class LosslessEncoder {
      * 
      * @param image          image to be encoded
      * @param outputFileName name of the output file
+     * @throws java.io.IOException if an error occurs during writing in the
+     * output file
      */
     public void encode(BufferedImage image, String outputFileName) throws IOException {
         byte[] values = makeArray(image);
@@ -66,7 +68,9 @@ public class LosslessEncoder {
     
     private void createOutputFile(ByteArrayOutputStream dataStream, int width, int height, int bitLength, 
             String outputFileName) throws IOException{
-        try(FileOutputStream outStream = new FileOutputStream(outputDir + outputFileName + ".enc")) {
+        String outputFile = outputDir + "\\" + outputFileName + ".enc";
+        
+        try(FileOutputStream outStream = new FileOutputStream(outputFile)) {
             EncodeWriter.writeImageSize(width, height, outStream);
             EncodeWriter.writeBitLength(bitLength, outStream);
             dataStream.writeTo(outStream);

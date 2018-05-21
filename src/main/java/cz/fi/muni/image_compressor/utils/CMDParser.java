@@ -16,33 +16,45 @@ public class CMDParser {
      * about image compression
      */
     public static Options parseCommandLine(String[] args){
-        String arg;
+        String outputDir = "";
         int i = 0;
         
-        //optional arguments
-        while(args[i].startsWith("-")) {
-            arg = getArgument(args, i++);
+        try {
+            String arg = getArgument(args, i++);
 
-            if(arg.equals("-help")){
-                System.out.println("Usage: ImageCompressor [-help] {e | d} input_file output_dir");
+            //optional arguments
+            while(arg.startsWith("-")) {
+                switch (arg) {
+                    case "-help":
+                        printUsageStatement();
+                        break;
+                    case "-outdir":
+                        arg = getArgument(args, i++);
+                        outputDir = arg;
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unknown optional argument!");
+                }
+
+                arg = getArgument(args, i++);
             }
-            else{
-                throw new IllegalArgumentException("Unknown optional argument!");
-            }
+
+            //mandatory arguments
+            String compressionOperation = arg;
+            String inputFile = getArgument(args, i++);
+        
+            Options options = new Options(compressionOperation, inputFile, outputDir); 
+            
+            allArgumentsRead(args, i);
+            return options;
+        } catch(IllegalArgumentException e) {
+            printUsageStatement();
+            throw new IllegalArgumentException(e.getMessage());
         }
-        
-        String compressionOperation = getArgument(args, i++);
-        String inputFile = getArgument(args, i++);
-        String outputDir = getArgument(args, i++);
-        
-        Options options = new Options(compressionOperation, inputFile, outputDir); 
-        
-        allArgumentsRead(args, i);
-        return options;
     }
     
     private static void allArgumentsRead(String[] args, int i){
-        if(i != args.length){
+        if(i < args.length){
             throw new IllegalArgumentException("Too many arguments!");
         }
     }
@@ -54,5 +66,9 @@ public class CMDParser {
         else{
             return args[i];
         }
+    }
+    
+    private static void printUsageStatement(){
+        System.out.println("Usage: [-help] [-outdir outputDir] {e | d} input_file");
     }
 }

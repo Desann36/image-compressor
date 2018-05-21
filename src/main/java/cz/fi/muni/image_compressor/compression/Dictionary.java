@@ -23,9 +23,9 @@ public class Dictionary {
     }
     
     /**
-     * Returns the bit length of values in this dictionary.
+     * Returns the bit length of codes in this dictionary.
      * 
-     * @return the bit length of values in this dictionary
+     * @return the bit length of codes in this dictionary
      */
     public int getCodeLength(){
         return this.codeLength;
