@@ -8,7 +8,7 @@ import javax.imageio.ImageIO;
 /**
  * Class for reading image files.
  */
-public class CustomReader {
+public class ImageReader {
 
     /**
      * Reads image file and returns the read data stored in BufferedImage.

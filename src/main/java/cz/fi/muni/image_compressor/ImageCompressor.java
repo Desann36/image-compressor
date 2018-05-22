@@ -4,7 +4,7 @@ import cz.fi.muni.image_compressor.common.CompressionOperation;
 import cz.fi.muni.image_compressor.common.Options;
 import cz.fi.muni.image_compressor.compression.LosslessEncoder;
 import cz.fi.muni.image_compressor.utils.CMDParser;
-import cz.fi.muni.image_compressor.utils.CustomReader;
+import cz.fi.muni.image_compressor.utils.ImageReader;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -23,7 +23,7 @@ public class ImageCompressor {
         final long startTime = System.currentTimeMillis();
         try{
             Options options = CMDParser.parseCommandLine(args);
-            BufferedImage image = CustomReader.readImageFile(options.getInputFile());
+            BufferedImage image = ImageReader.readImageFile(options.getInputFile());
             String fileNameWithOutExt = options.getInputFile().getName().replaceFirst("[.][^.]+$", "");
 
             if(options.getOperation().equals(CompressionOperation.ENCODING)){

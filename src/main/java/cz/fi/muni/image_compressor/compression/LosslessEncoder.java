@@ -2,7 +2,6 @@ package cz.fi.muni.image_compressor.compression;
 
 import cz.fi.muni.image_compressor.utils.EncodeWriter;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.Raster;
 import java.io.ByteArrayOutputStream;
