@@ -2,6 +2,9 @@ package cz.fi.muni.image_compressor.compression;
 
 import cz.fi.muni.image_compressor.utils.EncodeWriter;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.Raster;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -102,14 +105,13 @@ public class LosslessEncoder {
     private byte[] makeArray(BufferedImage image){
         int height = image.getHeight();
         int width = image.getWidth();
-        int index = 0;
         
         byte[] values = new byte[height * width];
+        Raster raster = image.getData();
+        DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
         
-        for(int row = 0; row < height; row++) {
-            for(int column = 0; column < width; column++) {
-                values[index++] = (byte) (image.getRGB(column, row) & 0xFF);
-            }
+        for(int i = 0; i < height * width; i++) {
+            values[i] = (byte) dataBuffer.getElem(i);
         }
         
         return values;

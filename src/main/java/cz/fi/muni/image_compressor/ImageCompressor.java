@@ -20,6 +20,7 @@ public class ImageCompressor {
      */
     public static void main(String[] args)
     {
+        final long startTime = System.currentTimeMillis();
         try{
             Options options = CMDParser.parseCommandLine(args);
             BufferedImage image = CustomReader.readImageFile(options.getInputFile());
@@ -36,5 +37,7 @@ public class ImageCompressor {
         }catch(IllegalArgumentException | IOException e){
             System.err.println(e.getMessage());
         }
+        final long endTime = System.currentTimeMillis();
+        System.out.println("Total execution time: " + (endTime - startTime) );
     }  
 }

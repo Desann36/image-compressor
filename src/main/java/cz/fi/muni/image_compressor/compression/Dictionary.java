@@ -52,7 +52,7 @@ public class Dictionary {
      * this dictionary contains no mapping for the pixels
      */
     public List<Byte> getPixels(int code){
-        return dictionary.inverseBidiMap().getKey(code);
+        return dictionary.get(code);
     }
     
     /**
