@@ -55,7 +55,13 @@ public class LosslessEncoder {
                 dictionary.addNewPixels(prevPixelsToEncode);
                 
                 i += pixelsToEncode.size();
+                
                 prevPixelsToEncode = new ArrayList<>(pixelsToEncode);
+                
+                if(dictionary.getSize() == Math.pow(2, Dictionary.MAX_LENGTH)){
+                    dictionary.flushDictionary();
+                    prevPixelsToEncode = new ArrayList<>();
+                }
             }   
             
             EncodeWriter.writeLastByte(remainingBitsOfCode, dataStream);
@@ -78,6 +84,7 @@ public class LosslessEncoder {
     }
     
     private String getCodeOfPixels(Dictionary dictionary, List<Byte> curr, String bitBuffer){
+        int i = dictionary.getCode(curr);
         return bitBuffer + String.format("%" + dictionary.getCodeLength() + "s", 
             Integer.toBinaryString(dictionary.getCode(curr))).replace(' ', '0');
     }

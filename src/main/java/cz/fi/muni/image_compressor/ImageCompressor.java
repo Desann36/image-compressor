@@ -7,6 +7,7 @@ import cz.fi.muni.image_compressor.utils.CMDParser;
 import cz.fi.muni.image_compressor.utils.ImageReader;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  * Entry class for compressing/decompressing images.
@@ -22,12 +23,12 @@ public class ImageCompressor {
     {
         try{
             Options options = CMDParser.parseCommandLine(args);
-            BufferedImage image = ImageReader.readImageFile(options.getInputFile());
-            String fileNameWithOutExt = options.getInputFile().getName().replaceFirst("[.][^.]+$", "");
+            String fileNameWithoutExt =  FilenameUtils.removeExtension(options.getInputFile().getName());
 
             if(options.getOperation().equals(CompressionOperation.ENCODING)){
                 LosslessEncoder encoder = new LosslessEncoder(options.getOutputDir());
-                encoder.encode(image, fileNameWithOutExt);
+                BufferedImage image = ImageReader.readImageFile(options.getInputFile());
+                encoder.encode(image, fileNameWithoutExt);
                 System.out.println("Image successfully encoded!");
             }
             else if(options.getOperation().equals(CompressionOperation.DECODING)){
