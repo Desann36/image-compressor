@@ -20,7 +20,6 @@ public class ImageCompressor {
      */
     public static void main(String[] args)
     {
-        final long startTime = System.currentTimeMillis();
         try{
             Options options = CMDParser.parseCommandLine(args);
             BufferedImage image = ImageReader.readImageFile(options.getInputFile());
@@ -28,7 +27,7 @@ public class ImageCompressor {
 
             if(options.getOperation().equals(CompressionOperation.ENCODING)){
                 LosslessEncoder encoder = new LosslessEncoder(options.getOutputDir());
-                encoder.encode(image, fileNameWithOutExt + "_encoded");
+                encoder.encode(image, fileNameWithOutExt);
                 System.out.println("Image successfully encoded!");
             }
             else if(options.getOperation().equals(CompressionOperation.DECODING)){
@@ -37,7 +36,5 @@ public class ImageCompressor {
         }catch(IllegalArgumentException | IOException e){
             System.err.println(e.getMessage());
         }
-        final long endTime = System.currentTimeMillis();
-        System.out.println("Total execution time: " + (endTime - startTime) );
     }  
 }

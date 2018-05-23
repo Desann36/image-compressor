@@ -43,13 +43,10 @@ public class LosslessEncoder {
         try (ByteArrayOutputStream dataStream = new ByteArrayOutputStream()) {
             String remainingBitsOfCode = "";
             List<Byte> prevPixelsToEncode = new ArrayList<>();
-            int wholeCodeLength = 0;
             int i = 0;
             
             while(i < values.length){
                 List<Byte> pixelsToEncode = getNextPixelsToEncode(dictionary, values, i);
-                
-                wholeCodeLength += dictionary.getCodeLength();
                 
                 String code = getCodeOfPixels(dictionary, pixelsToEncode, remainingBitsOfCode);
                 remainingBitsOfCode = EncodeWriter.writeBitsByBytes(code, dataStream);
@@ -62,19 +59,18 @@ public class LosslessEncoder {
             }   
             
             EncodeWriter.writeLastByte(remainingBitsOfCode, dataStream);
-            this.createOutputFile(dataStream, image.getWidth(), image.getHeight(), wholeCodeLength, outputFileName);
+            this.createOutputFile(dataStream, image.getWidth(), image.getHeight(), outputFileName);
         } catch (IOException e) {
             throw new IOException("Error encoding the image!", e);
         }
     }
     
-    private void createOutputFile(ByteArrayOutputStream dataStream, int width, int height, int bitLength, 
-            String outputFileName) throws IOException{
+    private void createOutputFile(ByteArrayOutputStream dataStream, int width, int height, String outputFileName) 
+            throws IOException{
         String outputFile = outputDir + "\\" + outputFileName + ".enc";
         
         try(FileOutputStream outStream = new FileOutputStream(outputFile)) {
             EncodeWriter.writeImageSize(width, height, outStream);
-            EncodeWriter.writeBitLength(bitLength, outStream);
             dataStream.writeTo(outStream);
         } catch (IOException e) {
             throw new IOException("Error creating the output file!", e);
@@ -108,7 +104,7 @@ public class LosslessEncoder {
         byte[] values = new byte[height * width];
         Raster raster = image.getData();
         DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
-        
+
         for(int i = 0; i < height * width; i++) {
             values[i] = (byte) dataBuffer.getElem(i);
         }

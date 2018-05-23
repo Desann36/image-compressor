@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  * Class for reading image files.
@@ -18,7 +19,7 @@ public class ImageReader {
      * @throws IOException if an error occurs during reading
      */
     public static BufferedImage readImageFile(File inputFile) throws IOException{
-        BufferedImage image = null;
+        BufferedImage image;
         
         try
         {
@@ -27,6 +28,12 @@ public class ImageReader {
         catch(IOException e)
         {
             throw new IOException("Error reading input file!", e);
+        }
+        
+        String ext = FilenameUtils.getExtension(inputFile.getPath());
+
+        if(!ext.equals("bmp") || image.getType() != BufferedImage.TYPE_BYTE_GRAY){
+            throw new IllegalArgumentException("Wrong type of image! The input should be an 8-bit grayscale BMP image.");
         }
 
         return image;
